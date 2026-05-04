@@ -34,7 +34,7 @@ npm run dev
 | Name        | Branch                    |
 |-------------|---------------------------|
 | @zhafrandzaky | feature/create-task       |
-| @friend    | feature/read-delete-task  |
+| @gent4dp      | feature/read-delete-task  |
 
 ## Git Workflow
 - No direct push to main
