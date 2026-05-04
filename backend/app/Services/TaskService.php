@@ -17,4 +17,15 @@ class TaskService
         $task->update($data);
         return $task->fresh();
     }
+
+    public function getTask(int $id): Task
+    {
+        return Task::findOrFail($id);
+    }
+
+    public function deleteTask(int $id): bool
+    {
+        $task = Task::findOrFail($id);
+        return $task->delete();
+    }
 }

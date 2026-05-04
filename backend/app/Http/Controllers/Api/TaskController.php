@@ -7,12 +7,20 @@ use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Resources\TaskResource;
 use App\Services\TaskService;
+use App\Models\Task;
 
 class TaskController extends Controller
 {
     public function __construct(
         private readonly TaskService $taskService
     ) {}
+
+    public function index(): \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+    {
+        $tasks = Task::latest()->get();
+
+        return TaskResource::collection($tasks);
+    }
 
     public function store(StoreTaskRequest $request): \Illuminate\Http\JsonResponse
     {
@@ -30,5 +38,14 @@ class TaskController extends Controller
         return (new TaskResource($task))
             ->response()
             ->setStatusCode(200);
+    }
+
+    public function destroy(int $id): \Illuminate\Http\JsonResponse
+    {
+        $this->taskService->deleteTask($id);
+
+        return response()->json([
+            'message' => 'Task deleted successfully'
+        ], 200);
     }
 }
