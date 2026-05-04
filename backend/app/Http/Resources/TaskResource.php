@@ -8,7 +8,16 @@ class TaskResource extends JsonResource
 {
     public function toArray($request): array
     {
-        // Resource fields will be implemented in next prompt
-        return parent::toArray($request);
+        return [
+            'id'          => $this->id,
+            'title'       => $this->title,
+            'description' => $this->description,
+            'priority'    => $this->priority,
+            'status'      => $this->status,
+            'start_date'  => $this->effective_start_date?->toISOString(),
+            'due_date'    => $this->due_date->toISOString(),
+            'created_at'  => $this->created_at->toISOString(),
+            'updated_at'  => $this->updated_at->toISOString(),
+        ];
     }
 }

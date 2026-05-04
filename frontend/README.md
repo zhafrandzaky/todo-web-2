@@ -1,36 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Todo App — Frontend
+
+Next.js frontend for the Todo App (Web Programming II project).
+
+## Tech Stack
+
+| Technology    | Purpose                          |
+|---------------|----------------------------------|
+| Next.js 16    | React framework (App Router)     |
+| TypeScript    | Type safety                      |
+| Tailwind v4   | Utility-first styling            |
+| shadcn/ui     | Accessible UI components         |
+| Lucide React  | Icons                            |
+| next-themes   | Dark / light mode                |
+| sonner        | Toast notifications              |
+| date-fns      | Date formatting                  |
+| react-day-picker | Date picker UI                |
+
+## Folder Structure
+
+```
+frontend/
+├── app/                  # Next.js App Router
+│   ├── layout.tsx        # Root layout (theme, toaster)
+│   └── page.tsx          # Main page
+├── components/
+│   ├── shared/           # Reusable layout components
+│   │   ├── navbar.tsx
+│   │   ├── theme-toggle.tsx
+│   │   ├── date-picker.tsx
+│   │   ├── time-picker.tsx
+│   │   └── error-dialog.tsx
+│   ├── task/             # Task-specific components
+│   │   ├── task-form.tsx
+│   │   ├── edit-task-form.tsx
+│   │   ├── task-list.tsx
+│   │   └── task-card.tsx
+│   └── ui/               # shadcn/ui primitives
+├── hooks/
+│   └── use-task.ts       # API call logic, loading/error state
+├── services/
+│   └── task.service.ts   # fetch wrappers for the Laravel API
+├── types/
+│   └── task.ts           # Task, CreateTaskPayload, UpdateTaskPayload
+├── constants/
+│   └── index.ts          # Priority/status labels and colours
+├── lib/
+│   └── utils.ts          # cn(), date helpers
+└── .env.local            # Environment variables
+```
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
+cp .env.example .env.local   # then fill in NEXT_PUBLIC_API_URL
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable              | Example                        | Description          |
+|-----------------------|--------------------------------|----------------------|
+| `NEXT_PUBLIC_API_URL` | `http://localhost:8000/api`    | Laravel API base URL |
 
-## Learn More
+## Pages & Components
 
-To learn more about Next.js, take a look at the following resources:
+### Pages
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Route | Component   | Description                    |
+|-------|-------------|--------------------------------|
+| `/`   | `page.tsx`  | Task list with create/edit UI  |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Key Components
 
-## Deploy on Vercel
+| Component        | Description                                            |
+|------------------|--------------------------------------------------------|
+| `TaskForm`       | Dialog to create a new task                            |
+| `EditTaskForm`   | Dialog to edit an existing task                        |
+| `TaskList`       | Renders the list of `TaskCard` items                   |
+| `TaskCard`       | Displays a single task with edit action                |
+| `ErrorDialog`    | Shows API validation or network errors                 |
+| `Navbar`         | Top navigation with theme toggle                       |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Branch
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`feature/create-task`
