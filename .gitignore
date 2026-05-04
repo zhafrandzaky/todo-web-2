@@ -1,0 +1,14 @@
+node_modules/
+.env
+.env.local
+AGENTS.md
+CLAUDE.md
+frontend/.next/
+frontend/out/
+backend/vendor/
+backend/storage/logs/*.log
+backend/bootstrap/cache/*.php
+.DS_Store
+Thumbs.db
+.idea/
+*.zip
