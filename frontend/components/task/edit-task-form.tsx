@@ -1,78 +1,81 @@
 'use client'
 
-import { useState } from 'react'
-import { Plus, Loader2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { DatePicker } from '@/components/shared/date-picker'
 import { TimePicker } from '@/components/shared/time-picker'
-import { CreateTaskPayload, Priority, Status } from '@/types/task'
+import { Task, UpdateTaskPayload, Priority, Status } from '@/types/task'
 import { PRIORITY_OPTIONS, STATUS_OPTIONS } from '@/constants'
-import { combineDateAndTime } from '@/lib/utils'
+import { combineDateAndTime, extractDate, extractTime } from '@/lib/utils'
 
-interface TaskFormProps {
-  onSubmit: (data: CreateTaskPayload) => void
+interface EditTaskFormProps {
+  task: Task
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onSubmit: (data: UpdateTaskPayload) => void
   isLoading?: boolean
 }
 
-const emptyForm = {
-  title: '',
-  description: '',
-  priority: 'medium' as Priority,
-  status: 'todo' as Status,
-  startDate: undefined as Date | undefined,
-  startTime: '',
-  dueDate: undefined as Date | undefined,
-  dueTime: '',
+function buildInitialForm(task: Task) {
+  return {
+    title: task.title,
+    description: task.description ?? '',
+    priority: task.priority as Priority,
+    status: task.status as Status,
+    startDate: task.start_date ? extractDate(task.start_date) : undefined as Date | undefined,
+    startTime: task.start_date ? extractTime(task.start_date) : '',
+    dueDate: task.due_date ? extractDate(task.due_date) : undefined as Date | undefined,
+    dueTime: task.due_date ? extractTime(task.due_date) : '',
+  }
 }
 
-export function TaskForm({ onSubmit, isLoading = false }: TaskFormProps) {
-  const [open, setOpen] = useState(false)
-  const [form, setForm] = useState(emptyForm)
+export function EditTaskForm({ task, open, onOpenChange, onSubmit, isLoading = false }: EditTaskFormProps) {
+  const [form, setForm] = useState(() => buildInitialForm(task))
 
-  function set<K extends keyof typeof emptyForm>(key: K, value: (typeof emptyForm)[K]) {
+  useEffect(() => {
+    setForm(buildInitialForm(task))
+  }, [task])
+
+  function set<K extends keyof ReturnType<typeof buildInitialForm>>(key: K, value: ReturnType<typeof buildInitialForm>[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.dueDate || !form.dueTime) return
     onSubmit({
-      title: form.title,
+      title: form.title || undefined,
       description: form.description || undefined,
       priority: form.priority,
       status: form.status,
       start_date: form.startDate && form.startTime
         ? combineDateAndTime(form.startDate, form.startTime)
         : undefined,
-      due_date: combineDateAndTime(form.dueDate, form.dueTime),
+      due_date: form.dueDate && form.dueTime
+        ? combineDateAndTime(form.dueDate, form.dueTime)
+        : undefined,
     })
-    setForm(emptyForm)
-    setOpen(false)
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button className="gap-1.5" />}>
-        <Plus className="size-4" />
-        Add Task
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md" showCloseButton={false}>
         <DialogHeader>
-          <DialogTitle>Add Task</DialogTitle>
+          <DialogTitle>Edit Task</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 pt-1">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="title">Title</Label>
-            <Input id="title" value={form.title} onChange={(e) => set('title', e.target.value)} placeholder="Task title" required />
+            <Label htmlFor="edit-title">Title</Label>
+            <Input id="edit-title" value={form.title} onChange={(e) => set('title', e.target.value)} placeholder="Task title" />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="description">Description</Label>
-            <Textarea id="description" value={form.description} onChange={(e) => set('description', e.target.value)} placeholder="Optional description" rows={3} />
+            <Label htmlFor="edit-description">Description</Label>
+            <Textarea id="edit-description" value={form.description} onChange={(e) => set('description', e.target.value)} placeholder="Optional description" rows={3} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
@@ -115,10 +118,10 @@ export function TaskForm({ onSubmit, isLoading = false }: TaskFormProps) {
             </div>
           </div>
           <div className="flex justify-end gap-2 pt-1">
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="submit" disabled={isLoading || !form.dueDate || !form.dueTime} className="gap-1.5">
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button type="submit" disabled={isLoading} className="gap-1.5">
               {isLoading && <Loader2 className="size-4 animate-spin" />}
-              Add Task
+              Save Changes
             </Button>
           </div>
         </form>
