@@ -1,15 +1,29 @@
 'use client'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { createTask, updateTask } from '@/services/task.service'
+import { createTask, updateTask, getTasks, deleteTask } from '@/services/task.service'
 import { Task, CreateTaskPayload, UpdateTaskPayload } from '@/types/task'
 
 export function useTask(
   onCreateSuccess: (task: Task) => void,
   onUpdateSuccess: (task: Task) => void,
+  onDeleteSuccess: (id: number) => void,
 ) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<{ title: string; errors: string[] } | null>(null)
+
+  const handleFetch = async (): Promise<Task[]> => {
+    setIsLoading(true)
+    try {
+      const tasks = await getTasks()
+      return tasks
+    } catch (err: unknown) {
+      setError(parseError(err))
+      return []
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const handleCreate = async (payload: CreateTaskPayload) => {
     setIsLoading(true)
@@ -37,9 +51,30 @@ export function useTask(
     }
   }
 
+  const handleDelete = async (id: number) => {
+    setIsLoading(true)
+    try {
+      await deleteTask(id)
+      onDeleteSuccess(id)
+      toast.success('Task deleted successfully')
+    } catch (err: unknown) {
+      setError(parseError(err))
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const clearError = () => setError(null)
 
-  return { isLoading, error, handleCreate, handleUpdate, clearError }
+  return {
+    isLoading,
+    error,
+    handleFetch,
+    handleCreate,
+    handleUpdate,
+    handleDelete,
+    clearError,
+  }
 }
 
 function parseError(err: unknown): { title: string; errors: string[] } {
