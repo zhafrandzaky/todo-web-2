@@ -7,31 +7,48 @@ import { Task, CreateTaskPayload, UpdateTaskPayload } from '@/types/task'
 export function useTask(
   onCreateSuccess: (task: Task) => void,
   onUpdateSuccess: (task: Task) => void,
+  onFetchSuccess: (tasks: Task[]) => void,
   onDeleteSuccess: (id: number) => void,
+  onReplaceTask: (tempId: number, realTask: Task) => void,
+  onRemoveTask: (id: number) => void,
+  getTaskById: (id: number) => Task | undefined,
 ) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<{ title: string; errors: string[] } | null>(null)
 
-  const handleFetch = async (): Promise<Task[]> => {
+  const handleFetch = async (): Promise<void> => {
     setIsLoading(true)
     try {
       const tasks = await getTasks()
-      return tasks
+      onFetchSuccess(tasks)
     } catch (err: unknown) {
       setError(parseError(err))
-      return []
     } finally {
       setIsLoading(false)
     }
   }
 
   const handleCreate = async (payload: CreateTaskPayload) => {
+    const now = new Date().toISOString()
+    const tempTask: Task = {
+      id: -Date.now(),
+      title: payload.title,
+      description: payload.description ?? null,
+      priority: payload.priority,
+      status: payload.status,
+      start_date: payload.start_date ?? now,
+      due_date: payload.due_date,
+      created_at: now,
+      updated_at: now,
+    }
+    onCreateSuccess(tempTask)
     setIsLoading(true)
     try {
-      const task = await createTask(payload)
-      onCreateSuccess(task)
+      const realTask = await createTask(payload)
+      onReplaceTask(tempTask.id, realTask)
       toast.success('Task created successfully')
     } catch (err: unknown) {
+      onRemoveTask(tempTask.id)
       setError(parseError(err))
     } finally {
       setIsLoading(false)
@@ -39,12 +56,27 @@ export function useTask(
   }
 
   const handleUpdate = async (id: number, payload: UpdateTaskPayload) => {
+    const previousTask = getTaskById(id)
+    if (previousTask) {
+      const optimisticTask: Task = {
+        ...previousTask,
+        title: payload.title ?? previousTask.title,
+        description: payload.description !== undefined ? payload.description : previousTask.description,
+        priority: payload.priority ?? previousTask.priority,
+        status: payload.status ?? previousTask.status,
+        start_date: payload.start_date ?? previousTask.start_date,
+        due_date: payload.due_date ?? previousTask.due_date,
+        updated_at: new Date().toISOString(),
+      }
+      onUpdateSuccess(optimisticTask)
+    }
     setIsLoading(true)
     try {
-      const task = await updateTask(id, payload)
-      onUpdateSuccess(task)
+      const realTask = await updateTask(id, payload)
+      onReplaceTask(id, realTask)
       toast.success('Task updated successfully')
     } catch (err: unknown) {
+      if (previousTask) onUpdateSuccess(previousTask)
       setError(parseError(err))
     } finally {
       setIsLoading(false)

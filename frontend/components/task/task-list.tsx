@@ -5,9 +5,10 @@ import { Task, UpdateTaskPayload } from '@/types/task'
 interface TaskListProps {
   tasks: Task[]
   onEdit: (id: number, data: UpdateTaskPayload) => void
+  onDelete: (id: number) => void
 }
 
-export function TaskList({ tasks, onEdit }: TaskListProps) {
+export function TaskList({ tasks, onEdit, onDelete }: TaskListProps) {
   if (tasks.length === 0) {
     return (
       <div className="flex flex-col items-center gap-3 py-20 text-center">
@@ -23,7 +24,7 @@ export function TaskList({ tasks, onEdit }: TaskListProps) {
   return (
     <div className="flex flex-col gap-3">
       {tasks.map((task) => (
-        <TaskCard key={task.id} task={task} onEdit={onEdit} />
+        <TaskCard key={task.id} task={task} onEdit={onEdit} onDelete={onDelete} />
       ))}
     </div>
   )

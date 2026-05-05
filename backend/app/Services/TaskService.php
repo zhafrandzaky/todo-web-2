@@ -18,6 +18,11 @@ class TaskService
         return $task->fresh();
     }
 
+    public function getTasks(): \Illuminate\Database\Eloquent\Collection
+    {
+        return Task::latest()->get();
+    }
+
     public function getTask(int $id): Task
     {
         return Task::findOrFail($id);

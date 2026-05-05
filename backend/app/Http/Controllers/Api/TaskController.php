@@ -15,11 +15,11 @@ class TaskController extends Controller
         private readonly TaskService $taskService
     ) {}
 
-    public function index(): \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+    public function index(): \Illuminate\Http\JsonResponse
     {
-        $tasks = Task::latest()->get();
+        $tasks = $this->taskService->getTasks();
 
-        return TaskResource::collection($tasks);
+        return TaskResource::collection($tasks)->response();
     }
 
     public function store(StoreTaskRequest $request): \Illuminate\Http\JsonResponse
